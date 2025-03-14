@@ -1,0 +1,3 @@
+interface IFloorProps {
+  floor: number;
+}
