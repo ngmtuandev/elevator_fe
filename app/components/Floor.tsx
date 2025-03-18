@@ -1,18 +1,48 @@
 import React from "react";
-import { callElevator } from "../services/websocketService";
-import { PiElevatorLight } from "react-icons/pi";
 
-interface FloorProps {
-  floor: number;
-}
+type FloorProps = {
+  floorNumber: number;
+  onCallElevator: (floor: number, type: string) => void;
+  onOpenDoor: () => void;
+  onCloseDoor: () => void;
+};
 
-const Floor: React.FC<FloorProps> = ({ floor }) => {
+const Floor = ({
+  floorNumber,
+  onCallElevator,
+  onOpenDoor,
+  onCloseDoor,
+}: FloorProps) => {
   return (
-    <div className="floor">
-      <PiElevatorLight className="xl:text-5xl" />
-      <p>Tầng {floor}</p>
-      <button onClick={() => callElevator(floor, "UP")}>⬆ Gọi lên</button>
-      <button onClick={() => callElevator(floor, "DOWN")}>⬇ Gọi xuống</button>
+    <div
+      className="flex flex-col justify-center"
+      style={{ border: "1px solid gray", padding: "10px", margin: "5px" }}
+    >
+      <h3 className="uppercase">Tầng {floorNumber}</h3>
+      <button
+        className=" font-semibold cursor-pointer"
+        onClick={() => onCallElevator(floorNumber, "UP")}
+      >
+        Lên
+      </button>
+      <button
+        className=" font-semibold cursor-pointer"
+        onClick={() => onCallElevator(floorNumber, "DOWN")}
+      >
+        Xuống
+      </button>
+      <button
+        className=" font-semibold cursor-pointer"
+        onClick={() => onOpenDoor()}
+      >
+        Mở cửa
+      </button>
+      <button
+        className=" font-semibold cursor-pointer"
+        onClick={() => onCloseDoor()}
+      >
+        Đóng cửa
+      </button>
     </div>
   );
 };

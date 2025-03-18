@@ -1,47 +1,43 @@
-let socket: WebSocket | null = null;
-const WEBSOCKET_URL = "ws://localhost:8181/ws";
-const listeners = new Set<(data: any) => void>();
+const WEBSOCKET_URL = "wss://9410-203-145-47-225.ngrok-free.app/ws";
+import { useEffect, useState, useRef } from "react";
 
-export const connectWebSocket = () => {
-  if (!socket || socket.readyState === WebSocket.CLOSED) {
-    socket = new WebSocket(WEBSOCKET_URL);
+export const useWebSocket = () => {
+  const [messages, setMessages] = useState<string[]>([]);
+  const socketRef = useRef<WebSocket | null>(null);
 
-    socket.onopen = () => {
-      console.log("websocket connected");
+  useEffect(() => {
+    socketRef.current = new WebSocket(WEBSOCKET_URL);
+
+    socketRef.current.onopen = () => {
+      console.log("ws connected");
     };
 
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        listeners.forEach((callback) => callback(data));
-      } catch (error) {
-        console.error("websocket message error:", error);
-      }
+    socketRef.current.onmessage = (event) => {
+      console.log("recived from backend:", event.data);
+      setMessages((prev) => [...prev, event.data]);
     };
 
-    socket.onerror = (error) => {
-      console.error("websocket error:", error);
+    socketRef.current.onerror = (error) => {
+      console.error("ws error:", error);
     };
 
-    socket.onclose = () => {
-      console.warn("websocket disconnected...");
-      setTimeout(connectWebSocket, 5000);
+    socketRef.current.onclose = () => {
+      console.log("ws closed");
     };
-  }
-};
 
-export const addListener = (callback: (data: any) => void) => {
-  listeners.add(callback);
-};
+    return () => {
+      socketRef.current?.close();
+    };
+  }, []);
 
-export const removeListener = (callback: (data: any) => void) => {
-  listeners.delete(callback);
-};
+  const sendMessage = (msg: string) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      console.log("send message:", msg);
+      socketRef.current.send(msg);
+    } else {
+      console.warn("ws not connected. Message not sent.");
+    }
+  };
 
-export const callElevator = (floor: number, direction: string) => {
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({ floor, direction }));
-  } else {
-    console.warn("websocket not connected");
-  }
+  return { messages, sendMessage };
 };
